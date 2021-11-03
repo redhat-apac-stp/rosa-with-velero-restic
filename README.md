@@ -101,16 +101,17 @@ Run the Velero installer with the following options set to obtain short-term cre
 	--default-volumes-to-restic \
 	--sa-annotations eks.amazonaws.com/role-arn=arn:aws:iam::<your AWS account>:role/velero-s3-irsa
 
-Inspect all the resources created. These should be failing with a CrashLoopBackoff error.
-
-Apply the following patch to fix this error.
+Apply the following patch to enable Restic pods to run as privileged.
 
 	oc patch ds/restic \
   	--namespace velero \
   	--type json \
   	-p '[{"op":"add","path":"/spec/template/spec/containers/0/securityContext","value": { "privileged": true}}]'
 
-After a few minutes the resources should show as healthy. If not just delete the velero and restic pods.
+Run the following command to verify that velero can access the S3 bucket.
+
+	oc logs <velero pod> | grep "Backup storage location valid, marking as available"
+
 
 
 
