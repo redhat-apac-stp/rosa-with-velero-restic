@@ -113,6 +113,39 @@ Run the following command to verify that velero can access the S3 bucket.
 
 	oc logs <velero pod> | grep "Backup storage location valid, marking as available"
 
+Test a backup and restore of a persistent volume (e.g., deploy PostgreSQL from a template in OpenShift and enter some data). Then backup the namespace with the following YAML.
+
+	apiVersion: velero.io/v1
+	kind: Backup
+	metadata:
+	  name: postgresql-backup-1
+	  namespace: velero
+	spec:
+	  includedNamespaces:
+	  - my-postgresql
+
+Check the status of the backup using the following command and confirm Restic was in fact used to backup any persistent volumes.
+
+	oc describe backup postgresql-backup-1
+
+Delete the namespace and resources therein and then restore everything via the following YAML.
+
+	kind: Restore
+	metadata:
+	  name: postgresql-restore-1
+	  namespace: velero
+	spec:
+	  backupName: postgresql-backup-1
+	  includedNamespaces:
+	  - my-postgresql
+
+Check the status of the restore using the following command to confirm all items were restored.
+
+	oc describe restore postgresql-restore-1
+
+Confirm the contents of the database were restored in the namespace specified.
+
+
 
 
 
