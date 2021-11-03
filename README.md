@@ -86,7 +86,36 @@ Before installing Velero we will setup the environment to address prerequisites 
 
 	oc new-project velero
 	oc annotate namespace velero openshift.io/node-selector=""
-	oc adm policy add-scc-to-user privileged -Z velero -n velero
+	oc adm policy add-scc-to-user privileged -z velero -n velero
+
+Run the Velero installer with the following options set to obtain short-term credentials via STS and integrated support for Restic backup/restore of persistent volumes. Substitute with the name of your S3 bucket and account accordingly.
+
+	velero install \
+	--provider aws \
+	--plugins velero/velero-plugin-for-aws:v1.2.1 \
+	--bucket <your S3 bucket> \
+	--backup-location-config region=ap-southeast-1 \
+	--snapshot-location-config region=ap-southeast-1 \
+	--no-secret \
+	--use-restic \
+	--default-volumes-to-restic \
+	--sa-annotations eks.amazonaws.com/role-arn=arn:aws:iam::<your AWS account>:role/velero-s3-irsa
+
+Inspect all the resources created. These should be failing with a CrashLoopBackoff error.
+
+Apply the following patch to fix this error.
+
+	oc patch ds/restic \
+  	--namespace velero \
+  	--type json \
+  	-p '[{"op":"add","path":"/spec/template/spec/containers/0/securityContext","value": { "privileged": true}}]'
+
+After a few minutes the resources should show as healthy. If not just delete the velero and restic pods.
+
+
+
+
+
 
 
 
