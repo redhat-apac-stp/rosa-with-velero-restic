@@ -96,6 +96,7 @@ Run the Velero installer with the following options set to obtain short-term cre
 	--bucket <your S3 bucket> \
 	--backup-location-config region=ap-southeast-1 \
 	--snapshot-location-config region=ap-southeast-1 \
+	--namespace velero \
 	--no-secret \
 	--use-restic \
 	--default-volumes-to-restic \
