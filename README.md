@@ -59,3 +59,35 @@ Create an IAM policy named velero-s3-access with the following permissions. Subs
 	        }
 	    ]
 	}
+
+Create an IAM role named velero-s3-irsa and attach the velero-S3-access policy along with the following trust relationship. Substitute with the name of your OIDC provider accordingly.
+
+	{
+	  "Version": "2012-10-17",
+	  "Statement": [
+	    {
+	      "Effect": "Allow",
+	      "Principal": {
+	        "Federated": "arn:aws:iam::635859128837:oidc-provider/<your OIDC provider>"
+	      },
+	      "Action": "sts:AssumeRoleWithWebIdentity",
+	      "Condition": {
+	        "StringEquals": {
+	          "<your OIDC provider>:sub": "system:serviceaccount:velero:velero"
+	        }
+	      }
+	    }
+	  ]
+	}
+
+The above trust relationship assumes that Velero will be installed into a namespace velero with a service account of velero. If this is not true substitute your values accordingly for the conditional check. You can obtain the identity of your OIDC provider using the rosa describe cluster and remove the https:// prefix.
+
+Before installing Velero we will setup the environment to address prerequisites for installing Restic that are not addressed by the Velero installer.
+
+	oc new-project velero
+	oc annotate namespace velero openshift.io/node-selector=""
+	oc adm policy add-scc-to-user privileged -Z velero -n velero
+
+
+
+
