@@ -148,6 +148,7 @@ Check the status of the backup using the following command and confirm Restic wa
 
 Delete the namespace and resources therein and then restore everything via the following YAML.
 
+	apiVersion: velero.io/v1
 	kind: Restore
 	metadata:
 	  name: postgresql-restore-1
