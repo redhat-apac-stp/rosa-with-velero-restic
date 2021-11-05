@@ -82,19 +82,53 @@ Create an IAM role named velero-s3-irsa and attach the velero-S3-access policy a
 
 You can obtain the identity of your OIDC provider using the rosa describe cluster command.
 
-Assign a privileged security context to the Velero service account.
+Create a namespace for Velero with annotations leveraged by Restic, and pre-assign a privileged security context to the Velero service account that will be created during the installation.
 
+	oc new-project velero
+	oc annotate namespace velero openshift.io/node-selector=""
 	oc adm policy add-scc-to-user privileged -z velero-server -n velero
 
-Create a values.yaml file with the following contents:
+Prepare a values.yaml file with the following contents:
 
+	configuration:
+	  provider: aws
+	  backupStorageLocation:
+	    bucket: velero-622de148-3b77-11ec-826c-18cc18d6b71c
+	    config:
+	      region: ap-southeast-1
+	  volumeSnapshotLocation:
+	    config:
+	      region: ap-southeast-1
+	    defaultVolumesToRestic: true
+	#
+	serviceAccount:
+	  server:
+	    create: true
+	    name: velero-server
+	    annotations:
+	      eks.amazonaws.com/role-arn: "arn:aws:iam::635859128837:role/velero-s3-irsa"
+	#
+	initContainers:
+	  - name: velero-plugin-for-aws
+	    image: velero/velero-plugin-for-aws:v1.3.0
+	    imagePullPolicy: IfNotPresent
+	    volumeMounts:
+	      - mountPath: /target
+		name: plugins
+	#
+	credentials:
+	  useSecret: false
+	#
+	deployRestic: true	
+	#
+	restic:
+	  privileged: true
 
-
-Install Velero using a Helm chart.
+Install Velero using Helm.
 
 	helm repo add vmware-tanzu https://vmware-tanzu.github.io/helm-charts
 	helm repo update
-	helm install vmware-tanzu/velero -n velero -f values.yaml
+	helm install velero vmware-tanzu/velero --namespace velero -f values.yaml
 	
 
 Run the Velero installer with the following options set to obtain short-term credentials via STS and integrated support for Restic backup/restore of persistent volumes. Substitute with the name of your S3 bucket and account accordingly.
@@ -116,7 +150,7 @@ Apply the following patch to enable Restic pods to run as privileged and on any 
   	--namespace velero \
   	--type json \
   	-p '[{"op":"add","path":"/spec/template/spec/containers/0/securityContext","value": { "privileged": true}}]'
-	oc annotate namespace velero openshift.io/node-selector=""
+
 
 Enable Velero pods to run as privileged.
 	
