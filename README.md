@@ -68,7 +68,7 @@ Create an IAM role named velero-s3-irsa and attach the velero-S3-access policy a
 	    {
 	      "Effect": "Allow",
 	      "Principal": {
-	        "Federated": "arn:aws:iam::635859128837:oidc-provider/<your OIDC provider>"
+	        "Federated": "arn:aws:iam::<your AWS account>:oidc-provider/<your OIDC provider>"
 	      },
 	      "Action": "sts:AssumeRoleWithWebIdentity",
 	      "Condition": {
