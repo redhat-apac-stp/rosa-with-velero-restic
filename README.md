@@ -6,7 +6,7 @@ ROSA can be deployed as either a public or private cluster in STS mode as per th
 
 https://mobb.ninja/docs/rosa/sts/
 
-Do not install the Velero operator (OADP) from Operator Hub as the basic install method does not support STS operation. Instead we will download the Velero CLI and install the operator manually so that we can enable all necessary features including support for Restic (required for backup/restore of persistent volumes).
+Do not install the Velero operator (OADP) from Operator Hub as the basic install method does not support STS operation. Instead we will use Helm to install Velero and Restic for backing up persistent volumes.
 
 Create an S3 bucket in AWS that will be used as the target for all user-managed backups.
 
@@ -78,7 +78,7 @@ Create an IAM role named velero-s3-irsa and attach the velero-S3-access policy a
 
 You can obtain the identity of your OIDC provider using the rosa describe cluster command.
 
-Create a namespace for Velero with annotations leveraged by Restic, and pre-assign a privileged security context to the Velero service account that will be created during the installation.
+Create a namespace for Velero with annotations and pre-assign a privileged security context to the Velero service account that is required by Restic and Velero f.
 
 	oc new-project velero
 	oc annotate namespace velero openshift.io/node-selector=""
