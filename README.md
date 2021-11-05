@@ -95,7 +95,7 @@ Prepare a Helm values.yaml file with the following contents:
 	  volumeSnapshotLocation:
 	    config:
 	      region: <your AWS region for the S3 bucket>
-	    defaultVolumesToRestic: true
+	  defaultVolumesToRestic: true
 	#
 	serviceAccount:
 	  server:
