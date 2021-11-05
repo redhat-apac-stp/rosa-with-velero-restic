@@ -60,7 +60,7 @@ Create an IAM policy named velero-s3-access with the following permissions. Subs
 	    ]
 	}
 
-Create an IAM role named velero-s3-irsa and attach the velero-S3-access policy along with the following trust relationship. Substitute with the name of your OIDC provider accordingly.
+Create an IAM role named velero-s3-irsa and attach the velero-S3-access policy along with the following trust relationship. Substitute with the name of your OIDC provider accordingly. Importantly use the name of a service account that is not already installed in the cluster.
 
 	{
 	  "Version": "2012-10-17",
@@ -73,15 +73,29 @@ Create an IAM role named velero-s3-irsa and attach the velero-S3-access policy a
 	      "Action": "sts:AssumeRoleWithWebIdentity",
 	      "Condition": {
 	        "StringEquals": {
-	          "<your OIDC provider>:sub": "system:serviceaccount:velero:velero"
+	          "<your OIDC provider>:sub": "system:serviceaccount:velero:velero-server"
 	        }
 	      }
 	    }
 	  ]
 	}
 
-The above trust relationship assumes that Velero will be installed into a namespace velero with a service account of velero. If this is not true substitute your values accordingly for the conditional check. You can obtain the identity of your OIDC provider using the rosa describe cluster and remove the https:// prefix.
+You can obtain the identity of your OIDC provider using the rosa describe cluster command.
 
+Assign a privileged security context to the Velero service account.
+
+	oc adm policy add-scc-to-user privileged -z velero-server -n velero
+
+Create a values.yaml file with the following contents:
+
+
+
+Install Velero using a Helm chart.
+
+	helm repo add vmware-tanzu https://vmware-tanzu.github.io/helm-charts
+	helm repo update
+	helm install vmware-tanzu/velero -n velero -f values.yaml
+	
 
 Run the Velero installer with the following options set to obtain short-term credentials via STS and integrated support for Restic backup/restore of persistent volumes. Substitute with the name of your S3 bucket and account accordingly.
 
