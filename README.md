@@ -167,3 +167,6 @@ Check the status of the restore using the following command to confirm all items
 
 Confirm the contents of the database were restored in the namespace specified.
 
+***
+
+If you experience any errors or have questions please contact the author at jwilms@redhat.com
