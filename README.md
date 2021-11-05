@@ -130,37 +130,12 @@ Install Velero using Helm.
 	helm repo update
 	helm install velero vmware-tanzu/velero --namespace velero -f values.yaml
 	
-
-Run the Velero installer with the following options set to obtain short-term credentials via STS and integrated support for Restic backup/restore of persistent volumes. Substitute with the name of your S3 bucket and account accordingly.
-
-	velero install \
-	--provider aws \
-	--plugins velero/velero-plugin-for-aws:v1.3.0 \
-	--bucket <your S3 bucket> \
-	--backup-location-config region=ap-southeast-1 \
-	--snapshot-location-config region=ap-southeast-1 \
-	--no-secret \
-	--use-restic \
-	--default-volumes-to-restic \
-	--sa-annotations eks.amazonaws.com/role-arn=arn:aws:iam::<your AWS account>:role/velero-s3-irsa
-
-Apply the following patch to enable Restic pods to run as privileged and on any node.
-
-	oc patch ds/restic \
-  	--namespace velero \
-  	--type json \
-  	-p '[{"op":"add","path":"/spec/template/spec/containers/0/securityContext","value": { "privileged": true}}]'
-
-
-Enable Velero pods to run as privileged.
-	
-	oc adm policy add-scc-to-user privileged -z velero -n velero
-
 Run the following command to verify that velero can access the S3 bucket.
 
+	oc get all -n velero
 	oc logs <velero pod> | grep "Backup storage location valid, marking as available"
 
-Test a backup and restore of a persistent volume (e.g., deploy PostgreSQL from a template in OpenShift and enter some data). Then backup the namespace with the following YAML.
+Test a backup and restore of a persistent volume (e.g., deploy PostgreSQL from a developer template in OpenShift and enter some data). Next backup the namespace with the following YAML.
 
 	apiVersion: velero.io/v1
 	kind: Backup
@@ -191,14 +166,4 @@ Check the status of the restore using the following command to confirm all items
 	oc describe restore postgresql-restore-1
 
 Confirm the contents of the database were restored in the namespace specified.
-
-
-
-
-
-
-
-
-
-
 
