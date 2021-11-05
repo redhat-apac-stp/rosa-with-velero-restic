@@ -87,7 +87,7 @@ Run the Velero installer with the following options set to obtain short-term cre
 
 	velero install \
 	--provider aws \
-	--plugins velero/velero-plugin-for-aws:v1.2.1 \
+	--plugins velero/velero-plugin-for-aws:v1.3.0 \
 	--bucket <your S3 bucket> \
 	--backup-location-config region=ap-southeast-1 \
 	--snapshot-location-config region=ap-southeast-1 \
