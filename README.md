@@ -82,11 +82,6 @@ Create an IAM role named velero-s3-irsa and attach the velero-S3-access policy a
 
 The above trust relationship assumes that Velero will be installed into a namespace velero with a service account of velero. If this is not true substitute your values accordingly for the conditional check. You can obtain the identity of your OIDC provider using the rosa describe cluster and remove the https:// prefix.
 
-Before installing Velero we will setup the environment to address prerequisites for installing Restic that are not addressed by the Velero installer.
-
-	oc new-project velero
-	oc annotate namespace velero openshift.io/node-selector=""
-	oc adm policy add-scc-to-user privileged -z velero -n velero
 
 Run the Velero installer with the following options set to obtain short-term credentials via STS and integrated support for Restic backup/restore of persistent volumes. Substitute with the name of your S3 bucket and account accordingly.
 
@@ -96,18 +91,22 @@ Run the Velero installer with the following options set to obtain short-term cre
 	--bucket <your S3 bucket> \
 	--backup-location-config region=ap-southeast-1 \
 	--snapshot-location-config region=ap-southeast-1 \
-	--namespace velero \
 	--no-secret \
 	--use-restic \
 	--default-volumes-to-restic \
 	--sa-annotations eks.amazonaws.com/role-arn=arn:aws:iam::<your AWS account>:role/velero-s3-irsa
 
-Apply the following patch to enable Restic pods to run as privileged.
+Apply the following patch to enable Restic pods to run as privileged and on any node.
 
 	oc patch ds/restic \
   	--namespace velero \
   	--type json \
   	-p '[{"op":"add","path":"/spec/template/spec/containers/0/securityContext","value": { "privileged": true}}]'
+	oc annotate namespace velero openshift.io/node-selector=""
+
+Enable Velero pods to run as privileged.
+	
+	oc adm policy add-scc-to-user privileged -z velero -n velero
 
 Run the following command to verify that velero can access the S3 bucket.
 
