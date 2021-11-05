@@ -8,10 +8,6 @@ https://mobb.ninja/docs/rosa/sts/
 
 Do not install the Velero operator (OADP) from Operator Hub as the basic install method does not support STS operation. Instead we will download the Velero CLI and install the operator manually so that we can enable all necessary features including support for Restic (required for backup/restore of persistent volumes).
 
-The latest Velero CLI (v1.7.0) can be downloaded from this URL:
-
-https://github.com/vmware-tanzu/velero/releases/tag/v1.7.0
-
 Create an S3 bucket in AWS that will be used as the target for all user-managed backups.
 
 	aws s3api create-bucket --bucket velero-`uuid` --region ap-southeast-1 --create-bucket-configuration LocationConstraint=ap-southeast-1
@@ -88,17 +84,17 @@ Create a namespace for Velero with annotations leveraged by Restic, and pre-assi
 	oc annotate namespace velero openshift.io/node-selector=""
 	oc adm policy add-scc-to-user privileged -z velero-server -n velero
 
-Prepare a values.yaml file with the following contents:
+Prepare a Helm values.yaml file with the following contents:
 
 	configuration:
 	  provider: aws
 	  backupStorageLocation:
-	    bucket: velero-622de148-3b77-11ec-826c-18cc18d6b71c
+	    bucket: <your S3 bucket>
 	    config:
-	      region: ap-southeast-1
+	      region: <your AWS region for the S3 bucket>
 	  volumeSnapshotLocation:
 	    config:
-	      region: ap-southeast-1
+	      region: <your AWS region for the S3 bucket>
 	    defaultVolumesToRestic: true
 	#
 	serviceAccount:
@@ -106,7 +102,7 @@ Prepare a values.yaml file with the following contents:
 	    create: true
 	    name: velero-server
 	    annotations:
-	      eks.amazonaws.com/role-arn: "arn:aws:iam::635859128837:role/velero-s3-irsa"
+	      eks.amazonaws.com/role-arn: "arn:aws:iam::<your AWS account>:role/velero-s3-irsa"
 	#
 	initContainers:
 	  - name: velero-plugin-for-aws
@@ -124,7 +120,7 @@ Prepare a values.yaml file with the following contents:
 	restic:
 	  privileged: true
 
-Install Velero using Helm.
+Install Velero (v1.7.0) using Helm.
 
 	helm repo add vmware-tanzu https://vmware-tanzu.github.io/helm-charts
 	helm repo update
