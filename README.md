@@ -78,10 +78,8 @@ Create an IAM role named velero-s3-irsa and attach the velero-S3-access policy a
 
 You can obtain the identity of your OIDC provider using the rosa describe cluster command.
 
-Create a namespace for Velero with annotations and pre-assign a privileged security context to the Velero service account that is required by Restic and Velero f.
+Create a privileged security context for the Velero service account.
 
-	oc new-project velero
-	oc annotate namespace velero openshift.io/node-selector=""
 	oc adm policy add-scc-to-user privileged -z velero-server -n velero
 
 Prepare a Helm values.yaml file with the following contents:
@@ -91,10 +89,10 @@ Prepare a Helm values.yaml file with the following contents:
 	  backupStorageLocation:
 	    bucket: <your S3 bucket>
 	    config:
-	      region: <your AWS region for the S3 bucket>
+	      region: <your AWS region>
 	  volumeSnapshotLocation:
 	    config:
-	      region: <your AWS region for the S3 bucket>
+	      region: <your AWS region>
 	  defaultVolumesToRestic: true
 	#
 	serviceAccount:
@@ -120,11 +118,13 @@ Prepare a Helm values.yaml file with the following contents:
 	restic:
 	  privileged: true
 
-Install Velero (v1.7.0) using Helm.
+Use Helm to install the latest version of Velero.
 
 	helm repo add vmware-tanzu https://vmware-tanzu.github.io/helm-charts
 	helm repo update
-	helm install velero vmware-tanzu/velero --namespace velero -f values.yaml
+	helm install velero vmware-tanzu/velero --namespace velero --create-namespace -f values.yaml
+	
+	oc annotate namespace velero openshift.io/node-selector=""
 	
 Run the following command to verify that velero can access the S3 bucket.
 
