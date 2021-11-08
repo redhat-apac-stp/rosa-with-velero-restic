@@ -120,10 +120,10 @@ Use Helm to install the latest version of Velero.
 	helm repo update
 	helm install velero vmware-tanzu/velero --namespace velero --create-namespace -f values.yaml
 
-Add annotations to enable Restic pods to run on any nodes and enable privileged execution for Velero prods.
-
-	oc annotate namespace velero openshift.io/node-selector=""
-	oc adm policy add-scc-to-user privileged -z velero-server -n velero
+#Add annotations to enable Restic pods to run on any nodes and enable privileged execution for Velero prods.
+#
+#	oc annotate namespace velero openshift.io/node-selector=""
+#	oc adm policy add-scc-to-user privileged -z velero-server -n velero
 	
 Run the following command to verify that velero can access the S3 bucket.
 
