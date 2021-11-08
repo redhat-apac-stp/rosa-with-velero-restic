@@ -78,10 +78,6 @@ Create an IAM role named velero-s3-irsa and attach the velero-S3-access policy a
 
 You can obtain the identity of your OIDC provider using the rosa describe cluster command.
 
-Create a privileged security context for the Velero service account.
-
-	oc adm policy add-scc-to-user privileged -z velero-server -n velero
-
 Prepare a Helm values.yaml file with the following contents:
 
 	configuration:
@@ -123,8 +119,11 @@ Use Helm to install the latest version of Velero.
 	helm repo add vmware-tanzu https://vmware-tanzu.github.io/helm-charts
 	helm repo update
 	helm install velero vmware-tanzu/velero --namespace velero --create-namespace -f values.yaml
-	
+
+Add annotations to enable Restic pods to run on any nodes and enable privileged execution for Velero prods.
+
 	oc annotate namespace velero openshift.io/node-selector=""
+	oc adm policy add-scc-to-user privileged -z velero-server -n velero
 	
 Run the following command to verify that velero can access the S3 bucket.
 
