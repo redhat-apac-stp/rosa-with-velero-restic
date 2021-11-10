@@ -80,7 +80,7 @@ Create an IAM role named velero-s3-irsa with the permissions defined by velero-S
 
 You can obtain the identity of your OIDC provider using the rosa describe cluster command.
 
-Prepare a Helm values.yaml file with the following contents:
+Prepare a Helm values.yaml file with the following contents. Note that if you plan to use dynamically created persistent volumes backed by EFS you need to set the global setting of defaultVolumesToRestic to false. Subsequently you will need to enable restic on a per-backup basis.
 
 	configuration:
 	  provider: aws
