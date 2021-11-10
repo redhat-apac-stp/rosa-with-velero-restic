@@ -2,7 +2,7 @@
 
 This article describes how to integrate ROSA with Velero for backing up user-managed projects. This is separate from the Velero instance that is used by RedHat SRE for backing up managed components. This integration will leverage short-term credentials using IAM Roles for Service Accounts and the default OIDC provider. Doing so avoids needing to create a dedicated Velero user in IAM and storing long-term credentials in a Kubernetes secret.
 
-Important disclaimer: due to a known limitation with Restic (https://github.com/vmware-tanzu/velero/issues/2958) it is currently not possible to restore persistent volumes backed by EFS.
+Important disclaimer: due to a known limitation with Restic (https://github.com/vmware-tanzu/velero/issues/2958) it is currently not possible to restore dynamically created persistent volumes backed by EFS.
 
 ROSA can be deployed as either a public or private cluster in STS mode as per these instructions:
 
