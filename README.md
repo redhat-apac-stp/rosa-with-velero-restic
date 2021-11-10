@@ -2,6 +2,8 @@
 
 This article describes how to integrate ROSA with Velero for backing up user-managed projects. This is separate from the Velero instance that is used by RedHat SRE for backing up managed components. This integration will leverage short-term credentials using IAM Roles for Service Accounts and the default OIDC provider. Doing so avoids needing to create a dedicated Velero user in IAM and storing long-term credentials in a Kubernetes secret.
 
+Important disclaimer: due to a known limitation with Restic (https://github.com/vmware-tanzu/velero/issues/2958) it is currently not possible to restore persistent volumes backed by EFS.
+
 ROSA can be deployed as either a public or private cluster in STS mode as per these instructions:
 
 https://mobb.ninja/docs/rosa/sts/
@@ -14,7 +16,7 @@ Create an S3 bucket in AWS that will be used as the target for all user-managed 
 
 Disable public access for this bucket from the AWS web console.
 
-Create an IAM policy named velero-s3-access with the following permissions. Substitute with the name of your S3 bucket accordingly.
+Create an IAM policy named velero-s3-policy with the following permissions. Substitute with the name of your S3 bucket accordingly.
 
 	{
 	    "Version": "2012-10-17",
@@ -56,7 +58,7 @@ Create an IAM policy named velero-s3-access with the following permissions. Subs
 	    ]
 	}
 
-Create an IAM role named velero-s3-irsa and attach the velero-S3-access policy along with the following trust relationship. Substitute with the name of your OIDC provider accordingly. Importantly use the name of a service account that is not already installed in the cluster.
+Create an IAM role named velero-s3-irsa with the permissions defined by velero-S3-policy along with the following trust relationship. Substitute with the name of your OIDC provider accordingly. Importantly use the name of a service account that is not already installed in the cluster.
 
 	{
 	  "Version": "2012-10-17",
@@ -126,7 +128,7 @@ Run the following commands to verify the setup.
 	oc get pods -o wide -n velero
 	oc logs <velero pod> | grep "Backup storage location valid, marking as available"
 
-Test a backup and restore of a persistent volume (e.g., deploy PostgreSQL from a developer template in OpenShift and enter some data). Next backup the namespace with the following YAML.
+Test a backup and restore of a persistent volume (e.g., deploy a PostgreSQL databases backed by EBS volumes). Backup the namespace with the following YAML.
 
 	apiVersion: velero.io/v1
 	kind: Backup
